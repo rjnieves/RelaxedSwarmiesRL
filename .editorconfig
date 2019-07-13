@@ -1,0 +1,10 @@
+root = true
+
+[*.{js,py,json,sh}]
+indent_size = 2
+
+[*.{cpp,cc,cxx,c,hpp,hh,hxx,h}]
+indent_size = 4
+
+[*]
+indent_style = space

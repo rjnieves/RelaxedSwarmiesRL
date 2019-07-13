@@ -1,0 +1,20 @@
+{
+    "cSpell.words": [
+        "Swarmie",
+        "Swarmies",
+        "amax",
+        "cond",
+        "deque",
+        "dtype",
+        "epgreedy",
+        "functools",
+        "isinf",
+        "keras",
+        "numpy",
+        "reeval",
+        "relu",
+        "scipy",
+        "uint"
+    ],
+    "python.pythonPath": "~/pythonenv/SWARMIES-RL/bin/python"
+}
