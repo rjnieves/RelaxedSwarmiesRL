@@ -3,16 +3,24 @@
 
 import numpy as np
 
+class IllegalMoveError(Exception):
+  def __init__(self):
+    super(IllegalMoveError, self).__init__('Swarmie already at that location')
+
 class Arena(object):
   def __init__(self, arena_dim, nest_dim, nest_at):
-    self.arena_cube_locs = np.zeros(arena_dim, dtype=np.uint8)
-    self.arena_swarmie_locs = np.zeros(arena_dim, dtype=np.uint8)
+    self.arena_dim = np.array(arena_dim, dtype=np.int16)
+    self.arena_cube_locs = np.zeros(arena_dim, dtype=np.int16)
+    self.arena_swarmie_locs = np.zeros(arena_dim, dtype=np.int16)
     self.nest_dim = nest_dim
     self.nest_at = nest_at
   
   def swarmie_enters(self, arena_coord):
+    arena_coord = np.array(arena_coord, dtype=np.int16)
+    if np.any(arena_coord < 0) or np.any(arena_coord >= self.arena_dim):
+      raise IllegalMoveError
     if self.arena_swarmie_locs[arena_coord] != 0:
-      raise RuntimeError("Swarmie already at that location")
+      raise IllegalMoveError
     else:
       self.arena_swarmie_locs[arena_coord] = 1
 

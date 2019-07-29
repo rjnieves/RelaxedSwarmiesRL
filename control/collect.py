@@ -68,8 +68,8 @@ class PickUpBlockStep(BaseCollectStep):
 class NavigateToNestStep(BaseCollectStep):
   def __init__(self, swarmie, block_pos):
     super(NavigateToNestStep, self).__init__(swarmie, block_pos)
-    self.nest_center = np.array(swarmie.arena.nest_at, dtype=np.uint8)
-    self.nest_center += np.array(swarmie.arena.nest_dim, dtype=np.uint8) / 2
+    self.nest_center = np.array(swarmie.arena.nest_at, dtype=np.int16)
+    self.nest_center += np.array(swarmie.arena.nest_dim, dtype=np.int16) / 2
 
   def step(self):
     self._progress_toward(self.nest_center)

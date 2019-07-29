@@ -2,10 +2,11 @@
 """
 
 import random
+import os
 from collections import deque
 import numpy as np
 import tensorflow as tf
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense
 from keras.optimizers import Adam
 from keras import backend as K
@@ -13,13 +14,17 @@ from keras import backend as K
 from .base import BaseAgent
 
 class DqnAgent(BaseAgent):
-  def __init__(self, policy, state_size, action_size, minibatch_size):
+  def __init__(self, policy, state_size, action_size, minibatch_size, model_file_path):
     super(DqnAgent, self).__init__(policy, state_size, action_size)
     self.minibatch_size = minibatch_size
+    self.model_file_path = model_file_path
     self.memory = deque(maxlen=2000)
     self.gamma = 0.95
     self.learning_rate = 0.001
-    self.model = self._build_model()
+    if os.path.exists(self.model_file_path):
+      self.model = load_model(self.model_file_path)
+    else:
+      self.model = self._build_model()
     self.target_model = self._build_model()
     self.update_target_model()
   
@@ -72,6 +77,7 @@ class DqnAgent(BaseAgent):
         target[0][action] = reward + self.gamma * np.amax(t)
       faux_batch = np.reshape(state, [1, self.state_size])
       self.model.fit(faux_batch, target, epochs=1, verbose=0)
+    self.model.save(self.model_file_path)
     self.policy.post_train_action()
 
 # vim: set ts=2 sw=2 expandtab:

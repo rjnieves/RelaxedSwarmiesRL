@@ -15,6 +15,7 @@ class StateRepository(object):
     self.emitter.on_cube_spotted(self.cube_spotted)
     self.emitter.on_cube_picked_up(self.cube_picked_up_by)
     self.emitter.on_cube_collected(self.cube_collected)
+    self.emitter.on_cube_dropped(self.cube_dropped_by)
 
   @property
   def state_size(self):
@@ -78,6 +79,9 @@ class StateRepository(object):
   def swarmie_loc_update(self, swarmie_id, swarmie_loc):
     self.swarmie_pos[swarmie_id] = tuple(swarmie_loc)
   
+  def swarmie_is_carrying(self, swarmie_id):
+    return self.swarmie_state[swarmie_id]
+
   def cube_spotted(self, cube_loc, swarmie_id):
     cube_loc = tuple(cube_loc)
     if cube_loc not in self.spotted_cubes:

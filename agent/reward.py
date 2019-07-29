@@ -20,14 +20,16 @@ import numpy as np
 #     return np.sum(distilled_state * self.penalty_factor)
 
 class RewardCenter(object):
-  def __init__(self, swarmie_id_list, emitter, spotting_bonus=0.1, collect_bonus=1.0):
+  def __init__(self, swarmie_id_list, emitter, spotting_bonus=0.1, collect_bonus=1.0, bad_drop_penalty=-0.5):
     super(RewardCenter, self).__init__()
     self.spotting_bonus = spotting_bonus
     self.collect_bonus = collect_bonus
+    self.bad_drop_penalty = bad_drop_penalty
     self.swarmie_id_list = swarmie_id_list
     self.reward_map = self._new_reward_map(swarmie_id_list)
     emitter.on_new_cube_spotted(self.new_cube_spotted_by)
     emitter.on_cube_collected(self.cube_collected_by)
+    emitter.on_cube_dropped(self.cube_dropped_by)
 
   def _new_reward_map(self, swarmie_id_list):
     return dict(zip(swarmie_id_list, [0.,] * len(swarmie_id_list)))
@@ -38,6 +40,9 @@ class RewardCenter(object):
   def cube_collected_by(self, swarmie_id):
     self.reward_map[swarmie_id] += self.collect_bonus
   
+  def cube_dropped_by(self, swarmie_id):
+    self.reward_map[swarmie_id] += self.bad_drop_penalty
+
   def reward_for(self, swarmie_id):
     return self.reward_map[swarmie_id]
 
