@@ -19,10 +19,10 @@ class Arena(object):
     arena_coord = np.array(arena_coord, dtype=np.int16)
     if np.any(arena_coord < 0) or np.any(arena_coord >= self.arena_dim):
       raise IllegalMoveError
-    if self.arena_swarmie_locs[arena_coord] != 0:
+    if self.arena_swarmie_locs[arena_coord[0], arena_coord[1]] != 0:
       raise IllegalMoveError
     else:
-      self.arena_swarmie_locs[arena_coord] = 1
+      self.arena_swarmie_locs[arena_coord[0], arena_coord[1]] = 1
 
   def swarmie_leaves(self, arena_coord):
     self.arena_swarmie_locs[arena_coord] = 0
