@@ -125,7 +125,7 @@ class SearchActionFactory(object):
     the_action.bound_swarmie = None
     self.quad_collection.append(the_action)
 
-def populate_arena(arena):
+def populate_arena(arena, emitter):
   for _ in range(CUBE_COUNT):
     placed_cube = False
     while not placed_cube:
@@ -135,10 +135,23 @@ def populate_arena(arena):
       )
       if not arena.cell_in_nest(cube_coord):
         arena.drop_april_cube(cube_coord)
+        emitter.emit_cube_added(cube_coord)
         placed_cube = True
+
+class TimeKeeper(object):
+  def __init__(self, steps_per_episode):
+    self.steps_per_episode = steps_per_episode
+    self.episode = 0
+    self.step = 0
+  
+  @property
+  def episode_time_exhausted(self):
+    return self.step == (self.steps_per_episode - 1)
 
 def __main__():
   my_emitter = EventEmitter()
+  time_keeper = TimeKeeper(steps_per_episode=MAX_STEPS)
+  my_emitter.log_activity('./activity_log.csv', time_keeper)
 
   my_arena = Arena(ARENA_DIMS, NEST_DIMS, NEST_TL)
 
@@ -183,17 +196,14 @@ def __main__():
     ACTION_COUNT
   )
 
-  populate_arena(my_arena)
+  populate_arena(my_arena, my_emitter)
 
-  episode_idx = 0
-  while episode_idx < MAX_EPISODES:
-    steps_left = MAX_STEPS
+  while time_keeper.episode < MAX_EPISODES:
     current_state = state_rep.make_state_vector()
-    while steps_left > 0:
-      steps_left -= 1
+    while time_keeper.step < MAX_STEPS:
       sys.stderr.write(
         '{:4d}:{:3d}{:3d}{:3d}{:3d} {:8s}{:8s}{:8s}     \r'.format(
-          steps_left,
+          MAX_STEPS - time_keeper.step,
           int(current_state[0] * CUBE_COUNT),
           int(current_state[1] * CUBE_COUNT),
           int(current_state[2] * CUBE_COUNT),
@@ -222,27 +232,30 @@ def __main__():
         if action == SEARCH_ACTION and state_rep.swarmie_is_carrying(a_swarmie.swarmie_id):
           raise RuntimeError('{} is searching AND carrying??? NO'.format(a_swarmie.swarmie_name))
         reward = reward_center.reward_for(a_swarmie.swarmie_id)
-        done = (steps_left == 0) or (next_state[STATE_COLLECTED_IDX] >= 1.)
+        done = time_keeper.episode_time_exhausted or (next_state[STATE_COLLECTED_IDX] >= 1.)
         a_swarmie.agent.remember(current_state, action, reward, next_state, done)
         a_swarmie.agent.learn()
         current_state = next_state
+      time_keeper.step += 1
       sys.stderr.flush()
       reward_center.reset()
     sys.stderr.write('\n')
     sys.stdout.write(
       '{},{},{}\n'.format(
-        episode_idx + 1,
-        (MAX_STEPS - steps_left),
+        time_keeper.episode,
+        time_keeper.step,
         int(current_state[STATE_COLLECTED_IDX] * CUBE_COUNT)
       )
     )
     sys.stdout.flush()
     my_arena = Arena(ARENA_DIMS, NEST_DIMS, NEST_TL)
-    populate_arena(my_arena)
+    time_keeper.episode += 1
+    time_keeper.step = 0
+    populate_arena(my_arena, my_emitter)
     for a_swarmie in [achilles, aeneas, ajax,]:
       a_swarmie.episode_reset(my_arena)
     state_rep.episode_reset([ACHILLES_IDX, AENEAS_IDX, AJAX_IDX,])
-    episode_idx += 1
+  my_emitter.close_log()
 
 if __name__ == '__main__':
   __main__()
