@@ -9,6 +9,7 @@ class EventEmitter(object):
     self.cube_picked_up_calls = []
     self.cube_dropped_calls = []
     self.cube_collected_calls = []
+    self.futile_collect_calls = []
   
   def on_swarmie_loc(self, callback):
     if callback not in self.swarmie_loc_calls:
@@ -34,6 +35,10 @@ class EventEmitter(object):
     if callback not in self.cube_collected_calls:
       self.cube_collected_calls.append(callback)
   
+  def on_futile_collect_attempt(self, callback):
+    if callback not in self.futile_collect_calls:
+      self.futile_collect_calls.append(callback)
+
   def emit_swarmie_loc(self, swarmie_id, swarmie_loc):
     for a_callback in self.swarmie_loc_calls:
       a_callback(swarmie_id, swarmie_loc)
@@ -56,6 +61,10 @@ class EventEmitter(object):
 
   def emit_cube_collected(self, swarmie_id):
     for a_callback in self.cube_collected_calls:
+      a_callback(swarmie_id)
+
+  def emit_futile_collect_attempt(self, swarmie_id):
+    for a_callback in self.futile_collect_calls:
       a_callback(swarmie_id)
 
 # vim: set ts=2 sw=2 expandtab:

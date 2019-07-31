@@ -77,4 +77,7 @@ class Swarmie(object):
     else:
       self.emitter.emit_cube_collected(self.id_number)
 
+  def futile_collect_attempt(self):
+    self.emitter.emit_futile_collect_attempt(self.id_number)
+
 # vim: set ts=2 sw=2 expandtab:

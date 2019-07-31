@@ -6,10 +6,11 @@ from .action import Action
 from world import Swarmie
 
 class AbortSequence(Exception):
-  def __init__(self, reason):
+  def __init__(self, reason, futile=False):
     super(AbortSequence, self).__init__(
       'Collect sequence aborted: {:s}'.format(reason)
     )
+    self.futile = futile
 
 class BaseCollectStep(object):
   def __init__(self, swarmie, block_pos):
@@ -46,7 +47,8 @@ class NavigateToBlockStep(BaseCollectStep):
   def step(self):
     if self.block_pos is None:
       raise AbortSequence(
-        'Cannot navigate to non-existent block'
+        'Cannot navigate to non-existent block',
+        futile=True
       )
     self._progress_toward(self.block_pos)
     return tuple(self.bound_swarmie.position) == self.block_pos
@@ -102,7 +104,9 @@ class CollectAction(Action):
       if self.steps[self.step_idx].step():
         self.step_idx += 1
       result = self.step_idx >= len(self.steps)
-    except AbortSequence:
+    except AbortSequence as ex:
+      if ex.futile:
+        self.bound_swarmie.futile_collect_attempt()
       result = True
     return result
 
