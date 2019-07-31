@@ -3,10 +3,11 @@
 
 import random
 import os
+import sys
 from collections import deque
 import numpy as np
 import tensorflow as tf
-from keras.models import Sequential, load_model
+from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 from keras import backend as K
@@ -21,11 +22,12 @@ class DqnAgent(BaseAgent):
     self.memory = deque(maxlen=2000)
     self.gamma = 0.95
     self.learning_rate = 0.001
-    if os.path.exists(self.model_file_path):
-      self.model = load_model(self.model_file_path)
-    else:
-      self.model = self._build_model()
+    self.model = self._build_model()
     self.target_model = self._build_model()
+    if os.path.exists(self.model_file_path):
+      sys.stderr.write('Loading model weights from {}\n'.format(self.model_file_path))
+      sys.stderr.flush()
+      self.model.load_weights(self.model_file_path)
     self.update_target_model()
   
   def _huber_loss(self, y_true, y_pred, clip_delta=1.0):
@@ -77,7 +79,7 @@ class DqnAgent(BaseAgent):
         target[0][action] = reward + self.gamma * np.amax(t)
       faux_batch = np.reshape(state, [1, self.state_size])
       self.model.fit(faux_batch, target, epochs=1, verbose=0)
-    self.model.save(self.model_file_path)
+    self.model.save_weights(self.model_file_path)
     self.policy.post_train_action()
 
 # vim: set ts=2 sw=2 expandtab:
